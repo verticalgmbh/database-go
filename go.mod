@@ -1,4 +1,4 @@
-module nightlycode.de/database
+module github.com/verticalgmbh/database-go
 
 go 1.13
 
