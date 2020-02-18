@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"nightlycode.de/database/entities/models"
+	"github.com/verticalgmbh/database-go/entities/models"
 
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/xpr"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/xpr"
 )
 
 // SqlWalker used to convert expressions to sql strings

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
-	"nightlycode.de/database/connection"
+	"github.com/verticalgmbh/database-go/connection"
 )
 
 // DropTable statement to remove a table in a database

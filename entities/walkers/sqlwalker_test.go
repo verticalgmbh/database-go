@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/xpr"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/xpr"
 )
 
 func TestParameterExpression(t *testing.T) {

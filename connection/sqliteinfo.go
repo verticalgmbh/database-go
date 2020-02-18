@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"nightlycode.de/database/entities/models"
-	"nightlycode.de/database/xpr"
+	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/xpr"
 )
 
 // SqliteInfo - sqlite specific information

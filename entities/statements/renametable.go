@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
-	"nightlycode.de/database/connection"
+	"github.com/verticalgmbh/database-go/connection"
 )
 
 // RenameTable statement used to rename a table in a database

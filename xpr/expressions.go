@@ -1,6 +1,6 @@
 package xpr
 
-import "nightlycode.de/database/entities/models"
+import "github.com/verticalgmbh/database-go/entities/models"
 
 var count *FunctionNode = &FunctionNode{function: FunctionCount}
 

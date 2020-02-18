@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"nightlycode.de/database/connection"
+	"github.com/verticalgmbh/database-go/connection"
 )
 
 // PreparedLoadStatement statement used to load data from the database

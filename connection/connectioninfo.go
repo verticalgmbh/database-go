@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strings"
 
-	"nightlycode.de/database/entities/models"
+	"github.com/verticalgmbh/database-go/entities/models"
 
-	"nightlycode.de/database/xpr"
+	"github.com/verticalgmbh/database-go/xpr"
 )
 
 // IConnectionInfo - database driver specific information

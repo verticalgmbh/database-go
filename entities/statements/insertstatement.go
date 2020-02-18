@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/entities/models"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/entities/models"
 )
 
 // InsertStatement - statement used to insert data into a database table

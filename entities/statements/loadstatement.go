@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"strings"
 
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/entities/models"
-	"nightlycode.de/database/entities/walkers"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/entities/walkers"
 )
 
 // LoadStatement statement used to load data from the database

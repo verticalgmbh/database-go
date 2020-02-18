@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/entities/models"
-	"nightlycode.de/database/entities/statements"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/entities/statements"
 )
 
 // IEntityManager - manages access to database with fluent statements

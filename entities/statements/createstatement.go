@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"strings"
 
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/entities/models"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/entities/models"
 )
 
 // CreateStatement statement used to create tables for models in database

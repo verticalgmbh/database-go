@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/telmengedar/go.collections/coll"
-	"nightlycode.de/database/entities/statements"
+	"github.com/verticalgmbh/collections-go/coll"
+	"github.com/verticalgmbh/database-go/entities/statements"
 
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/entities/models"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/entities/models"
 )
 
 // SchemaUpdater updates a schema in database

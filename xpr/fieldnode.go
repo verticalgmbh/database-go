@@ -1,6 +1,6 @@
 package xpr
 
-import "nightlycode.de/database/entities/models"
+import "github.com/verticalgmbh/database-go/entities/models"
 
 // FieldNode - node representing a field in an entity type
 type FieldNode struct {

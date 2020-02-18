@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"nightlycode.de/database/entities/models"
+	"github.com/verticalgmbh/database-go/entities/models"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"

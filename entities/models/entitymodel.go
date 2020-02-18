@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	"nightlycode.de/database/entities/operations"
+	"github.com/verticalgmbh/database-go/entities/operations"
 )
 
 // EntityModel - model of an entity in a database

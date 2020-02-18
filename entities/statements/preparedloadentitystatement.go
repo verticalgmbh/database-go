@@ -5,9 +5,9 @@ import (
 	"log"
 	"reflect"
 
-	"nightlycode.de/database/connection"
+	"github.com/verticalgmbh/database-go/connection"
 
-	"nightlycode.de/database/entities/models"
+	"github.com/verticalgmbh/database-go/entities/models"
 )
 
 // IPreparedLoadEntityStatement - interface for a prepared statement used to load entities from a database

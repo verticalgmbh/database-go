@@ -5,12 +5,12 @@ import (
 	"reflect"
 	"testing"
 
-	"nightlycode.de/database/entities/models"
-	"nightlycode.de/database/xpr"
+	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/xpr"
 
 	"github.com/stretchr/testify/assert"
 
-	"nightlycode.de/database/connection"
+	"github.com/verticalgmbh/database-go/connection"
 
 	_ "github.com/mattn/go-sqlite3"
 )

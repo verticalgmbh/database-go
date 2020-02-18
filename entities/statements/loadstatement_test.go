@@ -7,9 +7,9 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
-	"nightlycode.de/database/connection"
-	"nightlycode.de/database/entities/models"
-	"nightlycode.de/database/xpr"
+	"github.com/verticalgmbh/database-go/connection"
+	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/xpr"
 )
 
 type LoadModel struct {
