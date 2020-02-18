@@ -82,8 +82,7 @@ func (walker *SqlWalker) visitFunction(node *xpr.FunctionNode) {
 }
 
 func (walker *SqlWalker) visitParameter(node *xpr.ParameterNode) {
-	walker.builder.WriteString(walker.connectioninfo.Parameter())
-	walker.builder.WriteString(fmt.Sprintf("%d", node.Index()))
+	walker.connectioninfo.EvaluateParameter(node, walker.builder)
 }
 
 func (walker *SqlWalker) visitField(node *xpr.FieldNode) {

@@ -2,11 +2,11 @@ package statements
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/verticalgmbh/database-go/connection"
 	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/xpr"
 )
 
 // InsertStatement - statement used to insert data into a database table
@@ -63,8 +63,7 @@ func (statement *InsertStatement) Prepare() *PreparedStatement {
 		if index > 0 {
 			command.WriteRune(',')
 		}
-		command.WriteString(statement.connectioninfo.Parameter())
-		command.WriteString(fmt.Sprintf("%d", index+1))
+		statement.connectioninfo.EvaluateParameter(xpr.Parameter(), &command)
 	}
 
 	command.WriteRune(')')

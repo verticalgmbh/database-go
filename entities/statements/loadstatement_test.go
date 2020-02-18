@@ -33,7 +33,7 @@ func TestLoadDataCount(t *testing.T) {
 
 	statement := NewLoadStatement(model.Table, database, &connection.SqliteInfo{})
 	statement.Fields(xpr.Count())
-	statement.Where(xpr.Les(xpr.Field(model, "SomeInt"), xpr.Parameter(1)))
+	statement.Where(xpr.Les(xpr.Field(model, "SomeInt"), xpr.Parameter()))
 
 	operation := statement.Prepare()
 

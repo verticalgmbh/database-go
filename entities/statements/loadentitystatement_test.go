@@ -32,7 +32,7 @@ func TestWhere(t *testing.T) {
 	model := models.CreateModel(reflect.TypeOf(ExampleModel{}))
 
 	statement := NewLoadEntityStatement(model, database, &connection.SqliteInfo{})
-	statement.Where(xpr.Les(xpr.Field(model, "SomeInt"), xpr.Parameter(1)))
+	statement.Where(xpr.Les(xpr.Field(model, "SomeInt"), xpr.Parameter()))
 
 	operation := statement.Prepare()
 

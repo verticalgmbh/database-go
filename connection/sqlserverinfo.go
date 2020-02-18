@@ -12,16 +12,8 @@ import (
 	"github.com/verticalgmbh/database-go/xpr"
 )
 
-// SqliteInfo - sqlite specific information
-type SqliteInfo struct {
-}
-
-// NewSqliteInfo creates a new sqlite info
-//
-// **Returns**
-//   - *SqliteInfo: created sqlite connection info
-func NewSqliteInfo() *SqliteInfo {
-	return &SqliteInfo{}
+// SQLServerInfo - ms sql server specific information
+type SQLServerInfo struct {
 }
 
 // EvaluateParameter - literal used to specify parameters
@@ -29,7 +21,7 @@ func NewSqliteInfo() *SqliteInfo {
 // **Parameters**
 //   - function: function to evaluate
 //   - command: command to write evaluation result to
-func (info *SqliteInfo) EvaluateParameter(parameter *xpr.ParameterNode, command *strings.Builder) {
+func (info *SQLServerInfo) EvaluateParameter(parameter *xpr.ParameterNode, command *strings.Builder) {
 	if len(parameter.Name()) > 0 {
 		command.WriteString("@")
 		command.WriteString(parameter.Name())
@@ -45,7 +37,7 @@ func (info *SqliteInfo) EvaluateParameter(parameter *xpr.ParameterNode, command 
 //
 // **Returns**
 //   - string: masked column name
-func (info *SqliteInfo) MaskColumn(name string) string {
+func (info *SQLServerInfo) MaskColumn(name string) string {
 	return fmt.Sprintf("[%s]", name)
 }
 
@@ -54,7 +46,7 @@ func (info *SqliteInfo) MaskColumn(name string) string {
 // **Parameters**
 //   - function: function to evaluate
 //   - command: command to write evaluation result to
-func (info *SqliteInfo) EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder) {
+func (info *SQLServerInfo) EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder) {
 	switch function.Function() {
 	case xpr.FunctionCount:
 		command.WriteString("COUNT()")
@@ -69,7 +61,7 @@ func (info *SqliteInfo) EvaluateFunction(function *xpr.FunctionNode, command *st
 //
 // **Returns**
 //   - bool: true if table or view exists, false otherwise
-func (info *SqliteInfo) ExistsTableOrView(connection *sql.DB, name string) (bool, error) {
+func (info *SQLServerInfo) ExistsTableOrView(connection *sql.DB, name string) (bool, error) {
 	rows, err := connection.Query("SELECT name FROM sqlite_master WHERE (type='table' OR type='view') AND name = @1", name)
 	if err != nil {
 		return false, err
@@ -91,7 +83,7 @@ func (info *SqliteInfo) ExistsTableOrView(connection *sql.DB, name string) (bool
 //
 // **Returns**
 //   - string: database type name
-func (info *SqliteInfo) GetDatabaseType(datatype reflect.Type) string {
+func (info *SQLServerInfo) GetDatabaseType(datatype reflect.Type) string {
 	switch datatype.Kind() {
 	case reflect.Bool:
 		return "BOOLEAN"
@@ -118,7 +110,7 @@ func (info *SqliteInfo) GetDatabaseType(datatype reflect.Type) string {
 // **Parameters**
 //   - column:  column to create
 //   - command: command builder string
-func (info *SqliteInfo) CreateColumn(column *models.ColumnDescriptor, command *strings.Builder) {
+func (info *SQLServerInfo) CreateColumn(column *models.ColumnDescriptor, command *strings.Builder) {
 	command.WriteString(info.MaskColumn(column.Name()))
 	command.WriteString(fmt.Sprintf(" %s", info.GetDatabaseType(column.DataType())))
 
@@ -148,7 +140,7 @@ func (info *SqliteInfo) CreateColumn(column *models.ColumnDescriptor, command *s
 	}
 }
 
-func (info *SqliteInfo) analyseColumnDefinition(definition string) (*models.ColumnDescriptor, error) {
+func (info *SQLServerInfo) analyseColumnDefinition(definition string) (*models.ColumnDescriptor, error) {
 	expression := regexp.MustCompile("^['\\[]?(?P<name>[^ '\\]]+)['\\]]?\\s+(?P<type>[^ ]+)(?P<pk> PRIMARY KEY)?(?P<ai> AUTOINCREMENT)?(?P<uq> UNIQUE)?(?P<nn> NOT NULL)?( DEFAULT '?(?P<default>.+)'?)?$")
 
 	groups := expression.FindStringSubmatch(definition)
@@ -181,7 +173,7 @@ func (info *SqliteInfo) analyseColumnDefinition(definition string) (*models.Colu
 	return models.NewSchemaColumn(groups[1], groups[2], isprimarykey, isautoincrement, isunique, isnotnull, defaultvalue), nil
 }
 
-func (info *SqliteInfo) analyseUnique(definition string) []string {
+func (info *SQLServerInfo) analyseUnique(definition string) []string {
 	sql := strings.TrimSpace(definition)
 	columnssql := strings.Split(sql, ",")
 
@@ -193,7 +185,7 @@ func (info *SqliteInfo) analyseUnique(definition string) []string {
 	return columns
 }
 
-func (info *SqliteInfo) analyseTableSQL(sql string) ([]*models.ColumnDescriptor, []*models.IndexDescriptor, error) {
+func (info *SQLServerInfo) analyseTableSQL(sql string) ([]*models.ColumnDescriptor, []*models.IndexDescriptor, error) {
 	expression := regexp.MustCompile("^CREATE TABLE\\s+(?P<name>[^ ]+)\\s+\\((?P<columns>.+?)(\\s*,\\s*UNIQUE\\s*\\((?P<unique>.+?)\\))*\\s*\\)$")
 
 	groups := expression.FindStringSubmatch(sql)
@@ -223,7 +215,7 @@ func (info *SqliteInfo) analyseTableSQL(sql string) ([]*models.ColumnDescriptor,
 	return tablecolumns, tableuniques, nil
 }
 
-func (info *SqliteInfo) analyseIndexDefinitions(connection *sql.DB, tablename string) ([]*models.IndexDescriptor, error) {
+func (info *SQLServerInfo) analyseIndexDefinitions(connection *sql.DB, tablename string) ([]*models.IndexDescriptor, error) {
 	indexrows, err := connection.Query("SELECT sql FROM sqlite_master WHERE type='index' AND tbl_name=@1 AND sql IS NOT NULL", tablename)
 	if err != nil {
 		return nil, err
@@ -270,7 +262,7 @@ func (info *SqliteInfo) analyseIndexDefinitions(connection *sql.DB, tablename st
 // **Returns**
 //   - *Schema: schema information retrieved from database
 //   - error: error information if any error occured
-func (info *SqliteInfo) GetSchema(connection *sql.DB, name string) (models.Schema, error) {
+func (info *SQLServerInfo) GetSchema(connection *sql.DB, name string) (models.Schema, error) {
 	row := connection.QueryRow("SELECT type, tbl_name, sql FROM sqlite_master WHERE name=@1", name)
 
 	var typename string
@@ -290,7 +282,7 @@ func (info *SqliteInfo) GetSchema(connection *sql.DB, name string) (models.Schem
 	return schema, nil
 }
 
-func (info *SqliteInfo) toSchema(connection *sql.DB, typename string, tablename string, sql string) (models.Schema, error) {
+func (info *SQLServerInfo) toSchema(connection *sql.DB, typename string, tablename string, sql string) (models.Schema, error) {
 	switch typename {
 	case "table":
 		columns, uniques, err := info.analyseTableSQL(sql)
@@ -314,7 +306,7 @@ func (info *SqliteInfo) toSchema(connection *sql.DB, typename string, tablename 
 	}
 }
 
-func (info *SqliteInfo) loadSchemas(connection *sql.DB) ([]*SchemaModel, error) {
+func (info *SQLServerInfo) loadSchemas(connection *sql.DB) ([]*SchemaModel, error) {
 	rows, err := connection.Query("SELECT type, tbl_name, sql FROM sqlite_master WHERE type = 'view' OR type = 'table'")
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve schema infos: %s", err.Error())
@@ -354,7 +346,7 @@ func (info *SqliteInfo) loadSchemas(connection *sql.DB) ([]*SchemaModel, error) 
 // **Returns**
 //   - []Schema: schemas in database
 //   - error   : errors if any occured
-func (info *SqliteInfo) GetSchemas(connection *sql.DB) ([]models.Schema, error) {
+func (info *SQLServerInfo) GetSchemas(connection *sql.DB) ([]models.Schema, error) {
 	schemas, err := info.loadSchemas(connection)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to load schema information: %s", err.Error())

@@ -13,8 +13,12 @@ import (
 // IConnectionInfo - database driver specific information
 type IConnectionInfo interface {
 
-	// Parameter - literal used to specify parameters
-	Parameter() string
+	// EvaluateParameter - literal used to specify parameters
+	//
+	// **Parameters**
+	//   - function: function to evaluate
+	//   - command: command to write evaluation result to
+	EvaluateParameter(parameter *xpr.ParameterNode, command *strings.Builder)
 
 	// MaskColumn masks a column for use in an sql statement
 	//

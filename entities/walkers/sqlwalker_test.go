@@ -16,7 +16,7 @@ func TestParameterExpression(t *testing.T) {
 		connectioninfo: &connection.SqliteInfo{},
 		builder:        &command}
 
-	walker.Visit(xpr.Equals(xpr.Parameter(1), "teststring"))
+	walker.Visit(xpr.Equals(xpr.Parameter(), "teststring"))
 
-	assert.Equal(t, `@1 = 'teststring'`, command.String())
+	assert.Equal(t, `? = 'teststring'`, command.String())
 }

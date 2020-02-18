@@ -171,9 +171,14 @@ func Field(model *models.EntityModel, name string) *FieldNode {
 		name:  name}
 }
 
-// Parameter - creates a new node representing a statement parameter
-func Parameter(index int) *ParameterNode {
-	return &ParameterNode{index: index}
+// Parameter - creates a new node representing a positional statement parameter
+func Parameter() *ParameterNode {
+	return &ParameterNode{}
+}
+
+// NamedParameter - creates a new node representing a named statement parameter
+func NamedParameter(name string) *ParameterNode {
+	return &ParameterNode{name: name}
 }
 
 // Count used to count number of rows returned
