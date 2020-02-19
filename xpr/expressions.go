@@ -185,3 +185,10 @@ func NamedParameter(name string) *ParameterNode {
 func Count() *FunctionNode {
 	return count
 }
+
+// In checks for existence of an item in a collection
+func In(item interface{}, collection ...interface{}) *InCollectionNode {
+	return &InCollectionNode{
+		item:       item,
+		collection: collection}
+}

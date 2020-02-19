@@ -74,7 +74,25 @@ func (walker *SqlWalker) Visit(tree interface{}) {
 	case models.ColumnDescriptor:
 		column, _ := tree.(models.ColumnDescriptor)
 		walker.builder.WriteString(column.Name())
+	case *xpr.InCollectionNode:
+		incollection, _ := tree.(*xpr.InCollectionNode)
+		walker.visitIn(incollection)
+	case xpr.InCollectionNode:
+		incollection, _ := tree.(xpr.InCollectionNode)
+		walker.visitIn(&incollection)
 	}
+}
+
+func (walker *SqlWalker) visitIn(node *xpr.InCollectionNode) {
+	walker.Visit(node.Item())
+	walker.builder.WriteString(" IN (")
+	for index, item := range node.Collection() {
+		if index > 0 {
+			walker.builder.WriteRune(',')
+		}
+		walker.Visit(item)
+	}
+	walker.builder.WriteRune(')')
 }
 
 func (walker *SqlWalker) visitFunction(node *xpr.FunctionNode) {

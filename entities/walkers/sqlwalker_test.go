@@ -20,3 +20,15 @@ func TestParameterExpression(t *testing.T) {
 
 	assert.Equal(t, `? = 'teststring'`, command.String())
 }
+
+func TestInExpression(t *testing.T) {
+	var command strings.Builder
+
+	walker := SqlWalker{
+		connectioninfo: &connection.SqliteInfo{},
+		builder:        &command}
+
+	walker.Visit(xpr.In(xpr.Parameter(), 1, 6, 33, 4))
+
+	assert.Equal(t, `? IN (1,6,33,4)`, command.String())
+}
