@@ -18,6 +18,9 @@ type ILoadEntityStatement interface {
 
 	// prepares the statement for execution
 	Prepare() IPreparedLoadEntityStatement
+
+	// Join adds a join operation to apply to the load statement
+	Join(jointype JoinType, table string, predicate interface{}, alias string) ILoadEntityStatement
 }
 
 // LoadEntityStatement - builds a load entity statement used to load entities from database
@@ -105,12 +108,13 @@ func (statement *LoadEntityStatement) Where(predicate interface{}) ILoadEntitySt
 }
 
 // Join adds a join operation to apply to the load statement
-func (statement *LoadEntityStatement) Join(jointype JoinType, table string, predicate interface{}, alias string) {
+func (statement *LoadEntityStatement) Join(jointype JoinType, table string, predicate interface{}, alias string) ILoadEntityStatement {
 	statement.joins = append(statement.joins, &join{
 		jointype:  jointype,
 		table:     table,
 		predicate: predicate,
 		alias:     alias})
+	return statement
 }
 
 // Prepare - prepares the statement for execution
