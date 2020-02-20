@@ -164,6 +164,21 @@ func Binary(lhs interface{}, operator BinaryOperation, rhs interface{}) *BinaryN
 		rhs:      rhs}
 }
 
+// AliasField specify a field of an entity using a table alias
+func AliasField(alias string, model *models.EntityModel, fieldname string) *AliasNode {
+	return &AliasNode{
+		Alias: alias,
+		Field: Field(model, fieldname)}
+}
+
+// AliasColumn specifies a column of a table using a table alias
+func AliasColumn(alias string, columnname string) *AliasNode {
+	return &AliasNode{
+		Alias: alias,
+		Field: &ColumnNode{
+			Name: columnname}}
+}
+
 // Field - creates a new node representing an entity field
 func Field(model *models.EntityModel, name string) *FieldNode {
 	return &FieldNode{

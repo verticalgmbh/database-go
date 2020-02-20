@@ -62,6 +62,18 @@ func (walker *SqlWalker) Visit(tree interface{}) {
 	case *xpr.FieldNode:
 		field, _ := tree.(*xpr.FieldNode)
 		walker.visitField(field)
+	case xpr.ColumnNode:
+		column, _ := tree.(xpr.ColumnNode)
+		walker.visitColumn(&column)
+	case *xpr.ColumnNode:
+		column, _ := tree.(*xpr.ColumnNode)
+		walker.visitColumn(column)
+	case xpr.AliasNode:
+		alias, _ := tree.(xpr.AliasNode)
+		walker.visitAlias(&alias)
+	case *xpr.AliasNode:
+		alias, _ := tree.(*xpr.AliasNode)
+		walker.visitAlias(alias)
 	case xpr.FunctionNode:
 		function, _ := tree.(xpr.FunctionNode)
 		walker.visitFunction(&function)
@@ -103,9 +115,19 @@ func (walker *SqlWalker) visitParameter(node *xpr.ParameterNode) {
 	walker.connectioninfo.EvaluateParameter(node, walker.builder)
 }
 
+func (walker *SqlWalker) visitAlias(node *xpr.AliasNode) {
+	walker.builder.WriteString(node.Alias)
+	walker.builder.WriteRune('.')
+	walker.Visit(node.Field)
+}
+
 func (walker *SqlWalker) visitField(node *xpr.FieldNode) {
 	column := node.Model().ColumnFromField(node.Name())
 	walker.builder.WriteString(walker.connectioninfo.MaskColumn(column.Name()))
+}
+
+func (walker *SqlWalker) visitColumn(node *xpr.ColumnNode) {
+	walker.builder.WriteString(walker.connectioninfo.MaskColumn(node.Name))
 }
 
 func (walker *SqlWalker) visitUnary(node *xpr.UnaryNode) {

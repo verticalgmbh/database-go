@@ -13,6 +13,12 @@ import (
 // IPreparedLoadEntityStatement - interface for a prepared statement used to load entities from a database
 type IPreparedLoadEntityStatement interface {
 
+	// Command sql command string sent to database
+	//
+	// **Returns**
+	//   - string: sql-command
+	Command() string
+
 	// loads the data from database
 	Execute(arguments ...interface{}) ([]interface{}, error)
 }
@@ -25,8 +31,16 @@ type PreparedLoadEntityStatement struct {
 	model          *models.EntityModel
 }
 
+// Command sql command string sent to database
+//
+// **Returns**
+//   - string: sql-command
+func (statement *PreparedLoadEntityStatement) Command() string {
+	return statement.command
+}
+
 // Execute - loads matching entity data from database
-func (statement PreparedLoadEntityStatement) Execute(arguments ...interface{}) ([]interface{}, error) {
+func (statement *PreparedLoadEntityStatement) Execute(arguments ...interface{}) ([]interface{}, error) {
 	rows, err := statement.connection.Query(statement.command, arguments...)
 
 	if err != nil {

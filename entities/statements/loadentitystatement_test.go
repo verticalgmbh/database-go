@@ -57,3 +57,14 @@ func TestWhere(t *testing.T) {
 	assert.Equal(t, 1, result3.SomeInt)
 	assert.Equal(t, float32(0.8), result3.SomeFloat)
 }
+
+func TestJoin(t *testing.T) {
+	model := models.CreateModel(reflect.TypeOf(ExampleModel{}))
+	statement := NewLoadEntityStatement(model, nil, &connection.SqliteInfo{})
+	statement.Alias("t")
+	statement.Where(xpr.Equals(xpr.AliasColumn("t", "test"), 10))
+	statement.Join(JoinTypeInner, "differenttable", xpr.Equals(xpr.AliasColumn("dt", "key"), 8), "dt")
+
+	prepared := statement.Prepare()
+	assert.Equal(t, "SELECT [something],[someint],[somefloat] FROM examplemodel AS t INNER JOIN differenttable AS dt ON dt.[key] = 8 WHERE t.[test] = 10", prepared.Command())
+}
