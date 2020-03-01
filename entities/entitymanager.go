@@ -82,6 +82,17 @@ func (manager *EntityManager) Update(model *models.EntityModel) *statements.Upda
 	return statements.NewUpdateStatement(model, manager.connection, manager.connectioninfo)
 }
 
+// Delete creates a delete statement used to remove entities from the database
+//
+// **Parameters**
+//   - model: model of entity of which to update data
+//
+// **Returns**
+//   - *DeleteStatement: statement to use to prepare delete operation
+func (manager *EntityManager) Delete(model *models.EntityModel) *statements.DeleteStatement {
+	return statement.NewDeleteStatement(model, manager.connection, manager.connectioninfo)
+}
+
 // Exists determines whether an entity has a table or view in database
 //
 // **Parameters**
