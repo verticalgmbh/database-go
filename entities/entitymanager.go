@@ -90,7 +90,7 @@ func (manager *EntityManager) Update(model *models.EntityModel) *statements.Upda
 // **Returns**
 //   - *DeleteStatement: statement to use to prepare delete operation
 func (manager *EntityManager) Delete(model *models.EntityModel) *statements.DeleteStatement {
-	return statement.NewDeleteStatement(model, manager.connection, manager.connectioninfo)
+	return statements.NewDeleteStatement(model, manager.connection, manager.connectioninfo)
 }
 
 // Exists determines whether an entity has a table or view in database
