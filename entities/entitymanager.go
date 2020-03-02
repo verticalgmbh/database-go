@@ -51,13 +51,13 @@ func (manager *EntityManager) LoadEntities(model *models.EntityModel) statements
 //
 // **Returns**
 //   - LoadStatement: statement to use to prepare load operation
-func (manager *EntityManager) Load(model *models.EntityModel, fields ...interface{}) (*statements.LoadStatement, error) {
-	if len(fields) == 0 {
-		return nil, errors.New("load needs at least one field expression to load from database")
-	}
-
+func (manager *EntityManager) Load(model *models.EntityModel, fields ...interface{}) *statements.LoadStatement {
 	statement := statements.NewLoadStatement(model.Table, manager.connection, manager.connectioninfo)
-	return statement.Fields(fields...), nil
+
+	if len(fields) > 0 {
+		statement.Fields(fields...)
+	}
+	return statement
 }
 
 // Insert creates an insert statement used to insert entity data into a database

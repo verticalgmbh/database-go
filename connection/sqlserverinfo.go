@@ -45,11 +45,13 @@ func (info *SQLServerInfo) MaskColumn(name string) string {
 // **Parameters**
 //   - function: function to evaluate
 //   - command: command to write evaluation result to
-func (info *SQLServerInfo) EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder) {
+func (info *SQLServerInfo) EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder, eval func(interface{}) error) error {
 	switch function.Function() {
 	case xpr.FunctionCount:
 		command.WriteString("COUNT()")
 	}
+
+	return nil
 }
 
 // ExistsTableOrView determines whether a table exists in database

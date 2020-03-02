@@ -15,8 +15,9 @@ type LoadStatement struct {
 	connectioninfo connection.IConnectionInfo
 	table          string
 
-	fields []interface{}
-	where  interface{}
+	fields  []interface{}
+	groupby []interface{}
+	where   interface{}
 }
 
 // NewLoadStatement creates a new statement used to load data from the database
@@ -73,6 +74,18 @@ func (statement *LoadStatement) Fields(fields ...interface{}) *LoadStatement {
 	return statement
 }
 
+// GroupBy set criterias for result grouping
+//
+// **Parameters**
+//   - fields: expression which specifies fields to group by
+//
+// **Returns**
+//   - *LoadStatement: this statement for fluent behavior
+func (statement *LoadStatement) GroupBy(fields ...interface{}) *LoadStatement {
+	statement.groupby = fields
+	return statement
+}
+
 func (statement *LoadStatement) buildCommand() string {
 	var command strings.Builder
 	sqlwalker := walkers.NewSqlWalker(statement.connectioninfo, &command)
@@ -92,6 +105,17 @@ func (statement *LoadStatement) buildCommand() string {
 	if statement.where != nil {
 		command.WriteString(" WHERE ")
 		sqlwalker.Visit(statement.where)
+	}
+
+	if statement.groupby != nil {
+		command.WriteString(" GROUP BY ")
+		for index, field := range statement.groupby {
+			if index > 0 {
+				command.WriteRune(',')
+			}
+
+			sqlwalker.Visit(field)
+		}
 	}
 
 	return command.String()

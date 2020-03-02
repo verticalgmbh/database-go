@@ -15,6 +15,12 @@ const (
 
 	// FunctionSum of a set of values
 	FunctionSum
+
+	// FunctionMax maximum of a set of values
+	FunctionMax
+
+	// FunctionMin minimum of a set of values
+	FunctionMin
 )
 
 // FunctionNode node in an expression tree representing a database function

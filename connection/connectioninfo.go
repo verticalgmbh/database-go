@@ -43,7 +43,7 @@ type IConnectionInfo interface {
 	// **Parameters**
 	//   - function: function to evaluate
 	//   - command: command to write evaluation result to
-	EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder)
+	EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder, eval func(interface{}) error) error
 
 	// ExistsTableOrView determines whether a table exists in database
 	//

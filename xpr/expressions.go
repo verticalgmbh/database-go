@@ -207,3 +207,11 @@ func In(item interface{}, collection ...interface{}) *InCollectionNode {
 		item:       item,
 		collection: collection}
 }
+
+// Average computes the average of a series of values
+func Average(field interface{}) *FunctionNode {
+	return &FunctionNode{
+		function: FunctionAverage,
+		parameters: []interface{}{
+			field}}
+}

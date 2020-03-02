@@ -34,7 +34,7 @@ func NewSqlWalker(connectioninfo connection.IConnectionInfo, builder *strings.Bu
 //
 // **Parameters**
 //   - tree: expression to evaluate
-func (walker *SqlWalker) Visit(tree interface{}) {
+func (walker *SqlWalker) Visit(tree interface{}) error {
 	switch tree.(type) {
 	default:
 		walker.visitValue(tree)
@@ -76,10 +76,10 @@ func (walker *SqlWalker) Visit(tree interface{}) {
 		walker.visitAlias(alias)
 	case xpr.FunctionNode:
 		function, _ := tree.(xpr.FunctionNode)
-		walker.visitFunction(&function)
+		return walker.visitFunction(&function)
 	case *xpr.FunctionNode:
 		function, _ := tree.(*xpr.FunctionNode)
-		walker.visitFunction(function)
+		return walker.visitFunction(function)
 	case *models.ColumnDescriptor:
 		column, _ := tree.(*models.ColumnDescriptor)
 		walker.builder.WriteString(column.Name())
@@ -93,6 +93,8 @@ func (walker *SqlWalker) Visit(tree interface{}) {
 		incollection, _ := tree.(xpr.InCollectionNode)
 		walker.visitIn(&incollection)
 	}
+
+	return nil
 }
 
 func (walker *SqlWalker) visitIn(node *xpr.InCollectionNode) {
@@ -107,8 +109,8 @@ func (walker *SqlWalker) visitIn(node *xpr.InCollectionNode) {
 	walker.builder.WriteRune(')')
 }
 
-func (walker *SqlWalker) visitFunction(node *xpr.FunctionNode) {
-	walker.connectioninfo.EvaluateFunction(node, walker.builder)
+func (walker *SqlWalker) visitFunction(node *xpr.FunctionNode) error {
+	return walker.connectioninfo.EvaluateFunction(node, walker.builder, walker.Visit)
 }
 
 func (walker *SqlWalker) visitParameter(node *xpr.ParameterNode) {
