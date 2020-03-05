@@ -3,8 +3,6 @@ package models
 import (
 	"reflect"
 	"strings"
-
-	"github.com/verticalgmbh/database-go/entities/operations"
 )
 
 // EntityModel - model of an entity in a database
@@ -28,11 +26,11 @@ type EntityModel struct {
 //
 // **Returns**
 //   - *EntityModel: created entity model
-func CreateViewModel(entitytype reflect.Type, statement operations.IPreparedOperation) *EntityModel {
+func CreateViewModel(entitytype reflect.Type, statement string) *EntityModel {
 	return &EntityModel{
 		Table:      strings.ToLower(entitytype.Name()),
 		schematype: SchemaTypeView,
-		viewsql:    statement.Command()}
+		viewsql:    statement}
 }
 
 // CreateModel - creates a new entity model for a type

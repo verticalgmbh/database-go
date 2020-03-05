@@ -7,8 +7,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/verticalgmbh/database-go/entities/walkers"
-
 	"github.com/verticalgmbh/database-go/entities/models"
 	"github.com/verticalgmbh/database-go/xpr"
 )
@@ -48,21 +46,8 @@ func (info *SQLServerInfo) MaskColumn(name string) string {
 //   - function: function to evaluate
 //   - command: command to write evaluation result to
 func (info *SQLServerInfo) EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder, eval func(interface{}) error) error {
-	walker := walkers.NewSqlWalker(info, command)
-	switch function.Function() {
-	case xpr.FunctionCount:
-		command.WriteString("COUNT()")
-	case xpr.FunctionMin:
-		command.WriteString("MIN(")
-		walker.Visit(function.Parameters[0])
-		command.WriteRune(')')
-	case xpr.FunctionMax:
-		command.WriteString("MAX(")
-		walker.Visit(function.Parameters[0])
-		command.WriteRune(')')
-	}
-
-	return nil
+	_, err := EvaluateFunction(function, command, eval)
+	return err
 }
 
 // ExistsTableOrView determines whether a table exists in database

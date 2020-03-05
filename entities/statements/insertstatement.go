@@ -44,7 +44,7 @@ func (statement *InsertStatement) Columns(fieldnames ...string) *InsertStatement
 //
 // **Returns**
 //   - *InsertStatement: this statement for fluent behavior
-func (statement *InsertStatement) Values(values []interface{}) *InsertStatement {
+func (statement *InsertStatement) Values(values ...interface{}) *InsertStatement {
 	statement.values = values
 	return statement
 }

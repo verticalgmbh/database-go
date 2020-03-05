@@ -1,6 +1,9 @@
 package xpr
 
-import "github.com/verticalgmbh/database-go/entities/models"
+import (
+	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/interfaces"
+)
 
 var count *FunctionNode = &FunctionNode{function: FunctionCount}
 
@@ -240,4 +243,10 @@ func Average(field interface{}) *FunctionNode {
 		function: FunctionAverage,
 		parameters: []interface{}{
 			field}}
+}
+
+// Statement includes a sub statement in an expression
+func Statement(statement interfaces.IPreparedOperation) *StatementNode {
+	return &StatementNode{
+		Statement: statement}
 }

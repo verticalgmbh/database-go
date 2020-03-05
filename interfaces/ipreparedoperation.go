@@ -1,4 +1,4 @@
-package operations
+package interfaces
 
 // IPreparedOperation a statement prepared for execution. Provides a prepared sql string which can get send to database as is (sometimes adding parameters)
 type IPreparedOperation interface {

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/go-errors/errors"
 	"github.com/verticalgmbh/database-go/entities/models"
 
 	"github.com/verticalgmbh/database-go/xpr"
@@ -82,4 +83,49 @@ type IConnectionInfo interface {
 	//   - []Schema: schemas in database
 	//   - error   : errors if any occured
 	GetSchemas(connection *sql.DB) ([]models.Schema, error)
+}
+
+// EvaluateFunction function node evaluation which should work on all databases
+func EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder, eval func(interface{}) error) (bool, error) {
+	switch function.Function() {
+	case xpr.FunctionCount:
+		command.WriteString("COUNT()")
+	case xpr.FunctionAverage:
+		if len(function.Parameters()) != 1 {
+			return false, errors.Errorf("Function Average expects exactly one parameter")
+		}
+
+		command.WriteString("AVG(")
+		err := eval(function.Parameters()[0])
+		if err != nil {
+			return false, err
+		}
+		command.WriteRune(')')
+	case xpr.FunctionMin:
+		if len(function.Parameters()) != 1 {
+			return false, errors.Errorf("Function Minimum expects exactly one parameter")
+		}
+
+		command.WriteString("MIN(")
+		err := eval(function.Parameters()[0])
+		if err != nil {
+			return false, err
+		}
+		command.WriteRune(')')
+	case xpr.FunctionMax:
+		if len(function.Parameters()) != 1 {
+			return false, errors.Errorf("Function Maximum expects exactly one parameter")
+		}
+
+		command.WriteString("MAX(")
+		err := eval(function.Parameters()[0])
+		if err != nil {
+			return false, err
+		}
+		command.WriteRune(')')
+	default:
+		return false, nil
+	}
+
+	return true, nil
 }

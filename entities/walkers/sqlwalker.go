@@ -35,66 +35,58 @@ func NewSqlWalker(connectioninfo connection.IConnectionInfo, builder *strings.Bu
 // **Parameters**
 //   - tree: expression to evaluate
 func (walker *SqlWalker) Visit(tree interface{}) error {
-	switch tree.(type) {
+	switch v := tree.(type) {
 	default:
 		walker.visitValue(tree)
 	case *xpr.UnaryNode:
-		unary, _ := tree.(*xpr.UnaryNode)
-		walker.visitUnary(unary)
+		walker.visitUnary(v)
 	case xpr.UnaryNode:
-		unary, _ := tree.(xpr.UnaryNode)
-		walker.visitUnary(&unary)
+		walker.visitUnary(&v)
 	case *xpr.BinaryNode:
-		binary, _ := tree.(*xpr.BinaryNode)
-		walker.visitBinary(binary)
+		walker.visitBinary(v)
 	case xpr.BinaryNode:
-		binary, _ := tree.(xpr.BinaryNode)
-		walker.visitBinary(&binary)
+		walker.visitBinary(&v)
 	case xpr.ParameterNode:
-		parameter, _ := tree.(xpr.ParameterNode)
-		walker.visitParameter(&parameter)
+		walker.visitParameter(&v)
 	case *xpr.ParameterNode:
-		parameter, _ := tree.(*xpr.ParameterNode)
-		walker.visitParameter(parameter)
+		walker.visitParameter(v)
 	case xpr.FieldNode:
-		field, _ := tree.(xpr.FieldNode)
-		walker.visitField(&field)
+		walker.visitField(&v)
 	case *xpr.FieldNode:
-		field, _ := tree.(*xpr.FieldNode)
-		walker.visitField(field)
+		walker.visitField(v)
 	case xpr.ColumnNode:
-		column, _ := tree.(xpr.ColumnNode)
-		walker.visitColumn(&column)
+		walker.visitColumn(&v)
 	case *xpr.ColumnNode:
-		column, _ := tree.(*xpr.ColumnNode)
-		walker.visitColumn(column)
+		walker.visitColumn(v)
 	case xpr.AliasNode:
-		alias, _ := tree.(xpr.AliasNode)
-		walker.visitAlias(&alias)
+		walker.visitAlias(&v)
 	case *xpr.AliasNode:
-		alias, _ := tree.(*xpr.AliasNode)
-		walker.visitAlias(alias)
+		walker.visitAlias(v)
 	case xpr.FunctionNode:
-		function, _ := tree.(xpr.FunctionNode)
-		return walker.visitFunction(&function)
+		return walker.visitFunction(&v)
 	case *xpr.FunctionNode:
-		function, _ := tree.(*xpr.FunctionNode)
-		return walker.visitFunction(function)
+		return walker.visitFunction(v)
 	case *models.ColumnDescriptor:
-		column, _ := tree.(*models.ColumnDescriptor)
-		walker.builder.WriteString(column.Name())
+		walker.builder.WriteString(v.Name())
 	case models.ColumnDescriptor:
-		column, _ := tree.(models.ColumnDescriptor)
-		walker.builder.WriteString(column.Name())
+		walker.builder.WriteString(v.Name())
 	case *xpr.InCollectionNode:
-		incollection, _ := tree.(*xpr.InCollectionNode)
-		walker.visitIn(incollection)
+		walker.visitIn(v)
 	case xpr.InCollectionNode:
-		incollection, _ := tree.(xpr.InCollectionNode)
-		walker.visitIn(&incollection)
+		walker.visitIn(&v)
+	case *xpr.StatementNode:
+		walker.visitStatement(v)
+	case xpr.StatementNode:
+		walker.visitStatement(&v)
 	}
 
 	return nil
+}
+
+func (walker *SqlWalker) visitStatement(node *xpr.StatementNode) {
+	walker.builder.WriteRune('(')
+	walker.builder.WriteString(node.Statement.Command())
+	walker.builder.WriteRune(')')
 }
 
 func (walker *SqlWalker) visitIn(node *xpr.InCollectionNode) {

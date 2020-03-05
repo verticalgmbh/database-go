@@ -14,6 +14,14 @@ type PreparedLoadStatement struct {
 	connectioninfo connection.IConnectionInfo
 }
 
+// Command sql command string sent to database
+//
+// **Returns**
+//   - string: sql-command
+func (statement *PreparedLoadStatement) Command() string {
+	return statement.command
+}
+
 // Execute executes the statement and returns the result rows
 //
 // **Parameters**

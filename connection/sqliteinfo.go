@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-errors/errors"
-
 	"github.com/verticalgmbh/database-go/entities/models"
 	"github.com/verticalgmbh/database-go/xpr"
 )
@@ -57,23 +55,8 @@ func (info *SqliteInfo) MaskColumn(name string) string {
 //   - function: function to evaluate
 //   - command: command to write evaluation result to
 func (info *SqliteInfo) EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder, eval func(interface{}) error) error {
-	switch function.Function() {
-	case xpr.FunctionCount:
-		command.WriteString("COUNT()")
-	case xpr.FunctionAverage:
-		if len(function.Parameters()) != 1 {
-			return errors.Errorf("Function Average expects exactly one parameter")
-		}
-
-		command.WriteString("AVG(")
-		err := eval(function.Parameters()[0])
-		if err != nil {
-			return err
-		}
-		command.WriteRune(')')
-	}
-
-	return nil
+	_, err := EvaluateFunction(function, command, eval)
+	return err
 }
 
 // ExistsTableOrView determines whether a table exists in database
