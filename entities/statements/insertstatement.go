@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/verticalgmbh/database-go/entities/walkers"
+
 	"github.com/verticalgmbh/database-go/connection"
 	"github.com/verticalgmbh/database-go/entities/models"
 	"github.com/verticalgmbh/database-go/xpr"
@@ -15,7 +17,7 @@ type InsertStatement struct {
 	connectioninfo connection.IConnectionInfo
 	model          *models.EntityModel
 	fields         []string
-	statement      *LoadStatement
+	values         []interface{} // expression for values to insert
 }
 
 // NewInsertStatement - creates a new statement used to insert data to a database table
@@ -32,6 +34,18 @@ func NewInsertStatement(model *models.EntityModel, connection *sql.DB, connectio
 //   - `InsertStatement`: this statement for fluent behavior
 func (statement *InsertStatement) Columns(fieldnames ...string) *InsertStatement {
 	statement.fields = fieldnames
+	return statement
+}
+
+// Values specifies value expressions to use for statement
+//
+// **Parameters**
+//   - values: collection of expressions to use to build statement values
+//
+// **Returns**
+//   - *InsertStatement: this statement for fluent behavior
+func (statement *InsertStatement) Values(values []interface{}) *InsertStatement {
+	statement.values = values
 	return statement
 }
 
@@ -59,13 +73,24 @@ func (statement *InsertStatement) Prepare() *PreparedStatement {
 	}
 
 	command.WriteString(") VALUES(")
-	for index := range statement.fields {
-		if index > 0 {
-			command.WriteRune(',')
-		}
-		statement.connectioninfo.EvaluateParameter(xpr.Parameter(), &command)
-	}
+	if len(statement.values) > 0 {
+		walker := walkers.NewSqlWalker(statement.connectioninfo, &command)
+		for index, value := range statement.values {
+			if index > 0 {
+				command.WriteRune(',')
+			}
 
+			walker.Visit(value)
+		}
+	} else {
+
+		for index := range statement.fields {
+			if index > 0 {
+				command.WriteRune(',')
+			}
+			statement.connectioninfo.EvaluateParameter(xpr.Parameter(), &command)
+		}
+	}
 	command.WriteRune(')')
 
 	return &PreparedStatement{

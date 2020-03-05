@@ -137,6 +137,32 @@ func Grt(lhs interface{}, rhs interface{}) *BinaryNode {
 	return Binary(lhs, BinaryGreater, rhs)
 }
 
+// Max get maximum value of a series of values
+//
+// **Parameters**
+//   - param: expression which specifies values of which to get maximum
+//
+// **Returns**
+//   - *FunctionNode: node to use in expression
+func Max(param interface{}) *FunctionNode {
+	return &FunctionNode{
+		function:   FunctionMax,
+		parameters: []interface{}{param}}
+}
+
+// Min get minimum value of a series of values
+//
+// **Parameters**
+//   - param: expression which specifies values of which to get minimum
+//
+// **Returns**
+//   - *FunctionNode: node to use in expression
+func Min(param interface{}) *FunctionNode {
+	return &FunctionNode{
+		function:   FunctionMin,
+		parameters: []interface{}{param}}
+}
+
 // Geq creates a binary node used to compare whether a value is greater or equal to another
 //
 // **Parameters**
