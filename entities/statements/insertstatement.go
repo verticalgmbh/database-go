@@ -18,6 +18,7 @@ type InsertStatement struct {
 	model          *models.EntityModel
 	fields         []string
 	values         []interface{} // expression for values to insert
+	returnid       bool          // returned value contains inserted id instead of affected rows
 }
 
 // NewInsertStatement - creates a new statement used to insert data to a database table
@@ -49,6 +50,15 @@ func (statement *InsertStatement) Values(values ...interface{}) *InsertStatement
 	return statement
 }
 
+// ReturnID specified that statement should return identity of inserted row
+//
+// **Returns**
+//   - *InsertStatement: this statement for fluent behavior
+func (statement *InsertStatement) ReturnID() *InsertStatement {
+	statement.returnid = true
+	return statement
+}
+
 // Prepare prepares the insert statement for execution
 //
 // **Returns**
@@ -69,31 +79,46 @@ func (statement *InsertStatement) Prepare() *PreparedStatement {
 		if column == nil {
 			panic("Entity field does not exist")
 		}
-		command.WriteString(column.Name())
+		command.WriteString(statement.connectioninfo.MaskColumn(column.Name()))
+	}
+	command.WriteString(") ")
+
+	var valuestatement *PreparedLoadStatement
+	if len(statement.values) == 1 {
+		valuestatement, _ = statement.values[0].(*PreparedLoadStatement)
 	}
 
-	command.WriteString(") VALUES(")
-	if len(statement.values) > 0 {
-		walker := walkers.NewSqlWalker(statement.connectioninfo, &command)
-		for index, value := range statement.values {
-			if index > 0 {
-				command.WriteRune(',')
-			}
-
-			walker.Visit(value)
-		}
+	if valuestatement != nil {
+		command.WriteString(valuestatement.Command())
 	} else {
+		command.WriteString("VALUES(")
+		if len(statement.values) > 0 {
+			walker := walkers.NewSqlWalker(statement.connectioninfo, &command)
+			for index, value := range statement.values {
+				if index > 0 {
+					command.WriteRune(',')
+				}
 
-		for index := range statement.fields {
-			if index > 0 {
-				command.WriteRune(',')
+				walker.Visit(value)
 			}
-			statement.connectioninfo.EvaluateParameter(xpr.Parameter(), &command)
+		} else {
+
+			for index := range statement.fields {
+				if index > 0 {
+					command.WriteRune(',')
+				}
+				statement.connectioninfo.EvaluateParameter(xpr.Parameter(), &command)
+			}
 		}
+		command.WriteRune(')')
 	}
-	command.WriteRune(')')
+
+	if statement.returnid {
+		statement.connectioninfo.ReturnIdentity(&command)
+	}
 
 	return &PreparedStatement{
 		command:    command.String(),
-		connection: statement.connection}
+		connection: statement.connection,
+		loadresult: statement.returnid}
 }

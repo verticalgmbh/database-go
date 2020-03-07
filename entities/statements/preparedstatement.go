@@ -2,6 +2,7 @@ package statements
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -9,6 +10,7 @@ import (
 type PreparedStatement struct {
 	command    string
 	connection *sql.DB
+	loadresult bool
 }
 
 // Command sql command string send to database
@@ -54,10 +56,29 @@ func (statement *PreparedStatement) ExecuteTransaction(transaction *sql.Tx, argu
 		return 0, fmt.Errorf("Error executing '%s': %s", statement.command, err.Error())
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
+	if statement.loadresult {
+		rows, err := statement.connection.Query(statement.command, arguments...)
+		if err != nil {
+			return 0, err
+		}
+		defer rows.Close()
 
-	return affected, nil
+		for rows.Next() {
+			var value int64
+			err := rows.Scan(&value)
+			if err != nil {
+				return 0, err
+			}
+
+			return value, nil
+		}
+
+		return 0, errors.New("No result rows where returned by the statement")
+	} else {
+		affected, err := result.RowsAffected()
+		if err != nil {
+			return 0, err
+		}
+		return affected, nil
+	}
 }

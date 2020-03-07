@@ -110,3 +110,11 @@ func (info *SQLServerInfo) GetSchemas(connection *sql.DB) ([]models.Schema, erro
 	log.Panicf("Not implemented")
 	return nil, nil
 }
+
+// ReturnIdentity adds a statement to command which returns identity of last inserted row
+//
+// **Parameters**
+//   - command: statement to modify
+func (info *SQLServerInfo) ReturnIdentity(command *strings.Builder) {
+	command.WriteString(";SELECT SCOPE_IDENTITY()")
+}

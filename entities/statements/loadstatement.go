@@ -29,11 +29,22 @@ type LoadStatement struct {
 //
 // **Returns**
 //   - LoadStatement: statement to use to prepare operation
-func NewLoadStatement(table string, connection *sql.DB, connectioninfo connection.IConnectionInfo) *LoadStatement {
+func NewLoadStatement(connection *sql.DB, connectioninfo connection.IConnectionInfo) *LoadStatement {
 	return &LoadStatement{
 		connection:     connection,
-		connectioninfo: connectioninfo,
-		table:          table}
+		connectioninfo: connectioninfo}
+}
+
+// Table specifies a table to load data from
+//
+// **Parameters**
+//   - table: table to load data from
+//
+// **Returns**
+//   - LoadStatement: this statement for fluent behavior
+func (statement *LoadStatement) Table(table string) *LoadStatement {
+	statement.table = table
+	return statement
 }
 
 // Where set predicate for data to match
@@ -99,8 +110,10 @@ func (statement *LoadStatement) buildCommand() string {
 		sqlwalker.Visit(field)
 	}
 
-	command.WriteString(" FROM ")
-	command.WriteString(statement.table)
+	if len(statement.table) > 0 {
+		command.WriteString(" FROM ")
+		command.WriteString(statement.table)
+	}
 
 	if statement.where != nil {
 		command.WriteString(" WHERE ")

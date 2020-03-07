@@ -34,6 +34,18 @@ func (statement *PreparedLoadStatement) Execute(arguments ...interface{}) (*sql.
 	return statement.connection.Query(statement.command, arguments...)
 }
 
+// ExecuteTransaction executes the statement and returns the result rows
+//
+// **Parameters**
+//   - arguments: arguments used to fill statement parameters
+//
+// **Returns**
+//   - Rows: result rows
+//   - error: error if statement could not get executed
+func (statement *PreparedLoadStatement) ExecuteTransaction(transaction *sql.Tx, arguments ...interface{}) (*sql.Rows, error) {
+	return transaction.Query(statement.command, arguments...)
+}
+
 // ExecuteSet executes the statement and returns a set of result values. This means the statement should return a set of rows with exactly one column
 //
 // **Parameters**
@@ -43,7 +55,26 @@ func (statement *PreparedLoadStatement) Execute(arguments ...interface{}) (*sql.
 //   - []interface{}: result set
 //   - error: error if statement could not get executed
 func (statement *PreparedLoadStatement) ExecuteSet(arguments ...interface{}) ([]interface{}, error) {
-	rows, err := statement.connection.Query(statement.command, arguments...)
+	return statement.ExecuteSetTransaction(nil, arguments...)
+}
+
+// ExecuteSetTransaction executes the statement and returns a set of result values. This means the statement should return a set of rows with exactly one column
+//
+// **Parameters**
+//   - arguments: arguments used to fill statement parameters
+//
+// **Returns**
+//   - []interface{}: result set
+//   - error: error if statement could not get executed
+func (statement *PreparedLoadStatement) ExecuteSetTransaction(transaction *sql.Tx, arguments ...interface{}) ([]interface{}, error) {
+	var rows *sql.Rows
+	var err error
+
+	if transaction != nil {
+		rows, err = transaction.Query(statement.command, arguments...)
+	} else {
+		rows, err = statement.connection.Query(statement.command, arguments...)
+	}
 
 	if err != nil {
 		return nil, err
@@ -85,7 +116,27 @@ func (statement *PreparedLoadStatement) ExecuteSet(arguments ...interface{}) ([]
 //   - interface{}: result scalar
 //   - error: error if statement could not get executed
 func (statement *PreparedLoadStatement) ExecuteScalar(arguments ...interface{}) (interface{}, error) {
-	rows, err := statement.connection.Query(statement.command, arguments...)
+	return statement.ExecuteScalarTransaction(nil, arguments...)
+}
+
+// ExecuteScalarTransaction executes the statement and returns one value as result. This means the statement should return exactly one column.
+//               Multiple rows are supported however.
+//
+// **Parameters**
+//   - arguments: arguments used to fill statement parameters
+//
+// **Returns**
+//   - interface{}: result scalar
+//   - error: error if statement could not get executed
+func (statement *PreparedLoadStatement) ExecuteScalarTransaction(transaction *sql.Tx, arguments ...interface{}) (interface{}, error) {
+	var rows *sql.Rows
+	var err error
+
+	if transaction != nil {
+		rows, err = transaction.Query(statement.command, arguments...)
+	} else {
+		rows, err = statement.connection.Query(statement.command, arguments...)
+	}
 
 	if err != nil {
 		return nil, err

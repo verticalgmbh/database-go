@@ -32,7 +32,7 @@ func TestLoadDataCount(t *testing.T) {
 
 	model := models.CreateModel(reflect.TypeOf(LoadModel{}))
 
-	statement := NewLoadStatement(model.Table, database, &connection.SqliteInfo{})
+	statement := NewLoadStatement(database, &connection.SqliteInfo{}).Table(model.Table)
 	statement.Fields(xpr.Count())
 	statement.Where(xpr.Les(xpr.Field(model, "SomeInt"), xpr.Parameter()))
 
@@ -59,7 +59,7 @@ func TestLoadGroupBy(t *testing.T) {
 
 	model := models.CreateModel(reflect.TypeOf(LoadModel{}))
 
-	statement := NewLoadStatement(model.Table, database, &connection.SqliteInfo{})
+	statement := NewLoadStatement(database, &connection.SqliteInfo{}).Table(model.Table)
 	statement.Fields(xpr.Average(xpr.Field(model, "SomeFloat")))
 	statement.GroupBy(xpr.Field(model, "SomeInt"))
 

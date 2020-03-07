@@ -3,6 +3,7 @@ package walkers
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/verticalgmbh/database-go/entities/models"
 
@@ -200,11 +201,10 @@ func (walker *SqlWalker) visitValue(value interface{}) {
 		return
 	}
 
-	switch value.(type) {
+	switch v := value.(type) {
 	case string:
-		stringvalue, _ := value.(string)
 		walker.builder.WriteRune('\'')
-		for _, character := range stringvalue {
+		for _, character := range v {
 			switch character {
 			case '\'', '%', '_', '\\', '\n', '\r', '\t':
 				walker.builder.WriteRune('\\')
@@ -212,6 +212,8 @@ func (walker *SqlWalker) visitValue(value interface{}) {
 			walker.builder.WriteRune(character)
 		}
 		walker.builder.WriteRune('\'')
+	case time.Time:
+		walker.builder.WriteString(fmt.Sprintf("'%04d-%02d-%02d %02d:%02d:%02d'", v.Year(), v.Month(), v.Day(), v.Hour(), v.Minute(), v.Second()))
 	default:
 		walker.builder.WriteString(fmt.Sprintf("%v", value))
 	}

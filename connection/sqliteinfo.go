@@ -371,3 +371,11 @@ func (info *SqliteInfo) GetSchemas(connection *sql.DB) ([]models.Schema, error) 
 
 	return result, nil
 }
+
+// ReturnIdentity adds a statement to command which returns identity of last inserted row
+//
+// **Parameters**
+//   - command: statement to modify
+func (info *SqliteInfo) ReturnIdentity(command *strings.Builder) {
+	command.WriteString(";SELECT last_insert_rowid()")
+}

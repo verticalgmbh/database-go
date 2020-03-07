@@ -41,7 +41,19 @@ func (statement *PreparedLoadEntityStatement) Command() string {
 
 // Execute - loads matching entity data from database
 func (statement *PreparedLoadEntityStatement) Execute(arguments ...interface{}) ([]interface{}, error) {
-	rows, err := statement.connection.Query(statement.command, arguments...)
+	return statement.ExecuteTransaction(nil, arguments...)
+}
+
+// ExecuteTransaction - loads matching entity data from database
+func (statement *PreparedLoadEntityStatement) ExecuteTransaction(transaction *sql.Tx, arguments ...interface{}) ([]interface{}, error) {
+	var rows *sql.Rows
+	var err error
+
+	if transaction != nil {
+		rows, err = transaction.Query(statement.command, arguments...)
+	} else {
+		rows, err = statement.connection.Query(statement.command, arguments...)
+	}
 
 	if err != nil {
 		return nil, err

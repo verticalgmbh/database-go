@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -13,8 +14,26 @@ import (
 // IEntityManager - manages access to database with fluent statements
 type IEntityManager interface {
 
+	// Transaction starts a transaction using the underlying db connection
+	Transaction() (*sql.Tx, error)
+
 	// loads entities from the database
 	LoadEntities(model *models.EntityModel) statements.ILoadEntityStatement
+
+	// loads data from a table
+	Load(model *models.EntityModel, fields ...interface{}) *statements.LoadStatement
+
+	// inserts data into a table
+	Insert(model *models.EntityModel) *statements.InsertStatement
+
+	// updates data of a table
+	Update(model *models.EntityModel) *statements.UpdateStatement
+
+	// selects raw values from the database
+	Select(fields ...interface{}) *statements.LoadStatement
+
+	// deletes rows from a database
+	Delete(model *models.EntityModel) *statements.DeleteStatement
 }
 
 // EntityManager manages access to database with fluent statements using a database connection
@@ -30,6 +49,11 @@ func NewEntitymanager(connection *sql.DB, connectioninfo connection.IConnectionI
 		connection:     connection,
 		connectioninfo: connectioninfo,
 		schemaupdater:  &SchemaUpdater{}}
+}
+
+// Transaction starts a transaction using the underlying db connection
+func (manager *EntityManager) Transaction() (*sql.Tx, error) {
+	return manager.connection.BeginTx(context.Background(), &sql.TxOptions{})
 }
 
 // LoadEntities loads entities from the database
@@ -52,7 +76,18 @@ func (manager *EntityManager) LoadEntities(model *models.EntityModel) statements
 // **Returns**
 //   - LoadStatement: statement to use to prepare load operation
 func (manager *EntityManager) Load(model *models.EntityModel, fields ...interface{}) *statements.LoadStatement {
-	statement := statements.NewLoadStatement(model.Table, manager.connection, manager.connectioninfo)
+	return manager.Select(fields...).Table(model.Table)
+}
+
+// Select loads pure values from the database
+//
+// **Parameters**
+//   - fields: specifies fields to load from database
+//
+// **Returns**
+//   - LoadStatement: statement to use to prepare load operation
+func (manager *EntityManager) Select(fields ...interface{}) *statements.LoadStatement {
+	statement := statements.NewLoadStatement(manager.connection, manager.connectioninfo)
 
 	if len(fields) > 0 {
 		statement.Fields(fields...)

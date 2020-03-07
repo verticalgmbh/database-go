@@ -205,7 +205,7 @@ func (updater *SchemaUpdater) recreateTable(newmodel *models.EntityModel, oldsch
 	}, &remaining)
 
 	_, err = statements.NewInsertLoad(newmodel, updater.connection, updater.connectioninfo).Columns(remaining...).Load(
-		statements.NewLoadStatement(backupname, updater.connection, updater.connectioninfo).Columns(remaining)).Prepare().Execute()
+		statements.NewLoadStatement(updater.connection, updater.connectioninfo).Columns(remaining).Table(backupname)).Prepare().Execute()
 	if err != nil {
 		return fmt.Errorf("Error inserting existing data into new table: %s", err.Error())
 	}
