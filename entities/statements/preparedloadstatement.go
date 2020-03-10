@@ -214,7 +214,7 @@ func (statement *PreparedLoadStatement) ExecuteMappedEntityTransaction(transacti
 		entity := reflect.New(model.EntityType())
 
 		for index, column := range columns {
-			columndescription := statement.model.Column(column)
+			columndescription := model.Column(column)
 			entityfield := entity.Elem().FieldByName(columndescription.Field())
 			if entityfield.IsValid() && entityfield.CanSet() {
 				values[index] = entityfield.Addr().Interface()

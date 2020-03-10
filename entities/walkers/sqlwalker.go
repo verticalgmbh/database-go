@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/verticalgmbh/database-go/entities/models"
+	"github.com/verticalgmbh/database-go/interfaces"
 
 	"github.com/verticalgmbh/database-go/connection"
 	"github.com/verticalgmbh/database-go/xpr"
@@ -36,6 +37,11 @@ func NewSqlWalker(connectioninfo connection.IConnectionInfo, builder *strings.Bu
 // **Parameters**
 //   - tree: expression to evaluate
 func (walker *SqlWalker) Visit(tree interface{}) error {
+	if pstat, ok := tree.(interfaces.IPreparedOperation); ok {
+		walker.visitStatement(pstat)
+		return nil
+	}
+
 	switch v := tree.(type) {
 	default:
 		walker.visitValue(tree)
@@ -76,9 +82,9 @@ func (walker *SqlWalker) Visit(tree interface{}) error {
 	case xpr.InCollectionNode:
 		walker.visitIn(&v)
 	case *xpr.StatementNode:
-		walker.visitStatement(v)
+		walker.visitStatement(v.Statement)
 	case xpr.StatementNode:
-		walker.visitStatement(&v)
+		walker.visitStatement(v.Statement)
 	case *xpr.TableNode:
 		walker.builder.WriteString(v.Name)
 	case xpr.TableNode:
@@ -88,9 +94,9 @@ func (walker *SqlWalker) Visit(tree interface{}) error {
 	return nil
 }
 
-func (walker *SqlWalker) visitStatement(node *xpr.StatementNode) {
+func (walker *SqlWalker) visitStatement(statement interfaces.IPreparedOperation) {
 	walker.builder.WriteRune('(')
-	walker.builder.WriteString(node.Statement.Command())
+	walker.builder.WriteString(statement.Command())
 	walker.builder.WriteRune(')')
 }
 
