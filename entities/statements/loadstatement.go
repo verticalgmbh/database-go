@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/verticalgmbh/database-go/xpr"
+
 	"github.com/verticalgmbh/database-go/connection"
 	"github.com/verticalgmbh/database-go/entities/models"
 	"github.com/verticalgmbh/database-go/entities/walkers"
@@ -13,11 +15,13 @@ import (
 type LoadStatement struct {
 	connection     *sql.DB
 	connectioninfo connection.IConnectionInfo
-	table          string
+	from           interface{}
 
 	fields  []interface{}
 	groupby []interface{}
 	where   interface{}
+
+	union *union
 }
 
 // NewLoadStatement creates a new statement used to load data from the database
@@ -43,7 +47,19 @@ func NewLoadStatement(connection *sql.DB, connectioninfo connection.IConnectionI
 // **Returns**
 //   - LoadStatement: this statement for fluent behavior
 func (statement *LoadStatement) Table(table string) *LoadStatement {
-	statement.table = table
+	statement.from = xpr.Table(table)
+	return statement
+}
+
+// From - specifies a data set to load results from
+//
+// **Parameters**
+//   - from: data to select result from
+//
+// **Returns**
+//   - *LoadStatement: this statement for fluent behavior
+func (statement *LoadStatement) From(from interface{}) *LoadStatement {
+	statement.from = from
 	return statement
 }
 
@@ -110,9 +126,9 @@ func (statement *LoadStatement) buildCommand() string {
 		sqlwalker.Visit(field)
 	}
 
-	if len(statement.table) > 0 {
+	if statement.from != nil {
 		command.WriteString(" FROM ")
-		command.WriteString(statement.table)
+		sqlwalker.Visit(statement.from)
 	}
 
 	if statement.where != nil {
@@ -129,6 +145,15 @@ func (statement *LoadStatement) buildCommand() string {
 
 			sqlwalker.Visit(field)
 		}
+	}
+
+	if statement.union != nil {
+		command.WriteString(" UNION ")
+		if statement.union.all {
+			command.WriteString("ALL ")
+		}
+
+		command.WriteString(statement.union.statement.Command())
 	}
 
 	return command.String()

@@ -22,8 +22,10 @@ const (
 	BinaryBitOr
 	BinaryBitXor
 	BinaryAssign
+	BinaryLike
 )
 
+// BinaryNode - node which combines two operands using an operator
 type BinaryNode struct {
 	operator BinaryOperation
 	lhs      interface{}

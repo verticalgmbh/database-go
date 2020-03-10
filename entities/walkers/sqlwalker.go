@@ -79,6 +79,10 @@ func (walker *SqlWalker) Visit(tree interface{}) error {
 		walker.visitStatement(v)
 	case xpr.StatementNode:
 		walker.visitStatement(&v)
+	case *xpr.TableNode:
+		walker.builder.WriteString(v.Name)
+	case xpr.TableNode:
+		walker.builder.WriteString(v.Name)
 	}
 
 	return nil

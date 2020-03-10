@@ -40,6 +40,18 @@ func Equals(lhs interface{}, rhs interface{}) *BinaryNode {
 	return Binary(lhs, BinaryEquals, rhs)
 }
 
+// Like - creates a binary node for a Like operation
+//
+// **Parameters**
+//   - lhs: left hand side operand
+//   - rhs: right hand side operand
+//
+// **Returns**
+//   - *BinaryNode: node to use in expression trees
+func Like(lhs interface{}, rhs interface{}) *BinaryNode {
+	return Binary(lhs, BinaryLike, rhs)
+}
+
 // EqualsNot creates a binary node for an Not Equal operation
 //
 // **Parameters**
@@ -249,4 +261,9 @@ func Average(field interface{}) *FunctionNode {
 func Statement(statement interfaces.IPreparedOperation) *StatementNode {
 	return &StatementNode{
 		Statement: statement}
+}
+
+// Table - creates a node which specifies a table
+func Table(name string) *TableNode {
+	return &TableNode{Name: name}
 }

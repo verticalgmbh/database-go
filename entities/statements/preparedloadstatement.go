@@ -3,6 +3,10 @@ package statements
 import (
 	"database/sql"
 	"errors"
+	"log"
+	"reflect"
+
+	"github.com/verticalgmbh/database-go/entities/models"
 
 	"github.com/verticalgmbh/database-go/connection"
 )
@@ -164,4 +168,56 @@ func (statement *PreparedLoadStatement) ExecuteScalarTransaction(transaction *sq
 	}
 
 	return nil, errors.New("No result rows where returned by the statement")
+}
+
+// ExecuteEntity - loads matching entity data from database
+func (statement *PreparedLoadEntityStatement) ExecuteEntity(model *models.EntityModel, arguments ...interface{}) ([]interface{}, error) {
+	return statement.ExecuteEntityTransaction(nil, model, arguments...)
+}
+
+// ExecuteEntityTransaction - loads matching entity data from database
+func (statement *PreparedLoadEntityStatement) ExecuteEntityTransaction(transaction *sql.Tx, model *models.EntityModel, arguments ...interface{}) ([]interface{}, error) {
+	var rows *sql.Rows
+	var err error
+
+	if transaction != nil {
+		rows, err = transaction.Query(statement.command, arguments...)
+	} else {
+		rows, err = statement.connection.Query(statement.command, arguments...)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	var values []interface{} = make([]interface{}, len(columns))
+	var entities []interface{}
+	for rows.Next() {
+		entity := reflect.New(model.EntityType())
+
+		for index, column := range columns {
+			columndescription := statement.model.Column(column)
+			entityfield := entity.Elem().FieldByName(columndescription.Field())
+			if entityfield.IsValid() && entityfield.CanSet() {
+				values[index] = entityfield.Addr().Interface()
+			}
+		}
+
+		err := rows.Scan(values...)
+		if err != nil {
+			log.Printf("ERR: %s", err.Error())
+			continue
+		}
+
+		entities = append(entities, entity.Interface())
+	}
+
+	return entities, nil
 }

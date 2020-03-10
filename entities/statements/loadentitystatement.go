@@ -21,6 +21,9 @@ type ILoadEntityStatement interface {
 
 	// Join adds a join operation to apply to the load statement
 	Join(jointype JoinType, table string, predicate interface{}, alias string) ILoadEntityStatement
+
+	// Union - concatenates another result set to a result
+	Union(load *PreparedLoadStatement, all bool) ILoadEntityStatement
 }
 
 // LoadEntityStatement - builds a load entity statement used to load entities from database
@@ -33,6 +36,7 @@ type LoadEntityStatement struct {
 	where interface{}
 
 	joins []*join
+	union *union
 }
 
 // NewLoadEntityStatement - creates a new LoadEntityStatement
@@ -91,6 +95,15 @@ func (statement *LoadEntityStatement) buildCommandText() string {
 		sqlwalker.Visit(statement.where)
 	}
 
+	if statement.union != nil {
+		command.WriteString(" UNION ")
+		if statement.union.all {
+			command.WriteString("ALL ")
+		}
+
+		command.WriteString(statement.union.statement.Command())
+	}
+
 	return command.String()
 }
 
@@ -114,6 +127,14 @@ func (statement *LoadEntityStatement) Join(jointype JoinType, table string, pred
 		table:     table,
 		predicate: predicate,
 		alias:     alias})
+	return statement
+}
+
+// Union - concatenates another result set to a result
+func (statement *LoadEntityStatement) Union(load *PreparedLoadStatement, all bool) ILoadEntityStatement {
+	statement.union = &union{
+		statement: load,
+		all:       all}
 	return statement
 }
 
