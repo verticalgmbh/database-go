@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"reflect"
+	"unsafe"
 
 	"github.com/verticalgmbh/database-go/entities/models"
 
@@ -17,6 +18,8 @@ type PreparedLoadStatement struct {
 	connection     *sql.DB
 	connectioninfo connection.IConnectionInfo
 	model          *models.EntityModel // model on which select was based on
+
+	prepared *sql.Stmt
 }
 
 // Command sql command string sent to database
@@ -36,7 +39,14 @@ func (statement *PreparedLoadStatement) Command() string {
 //   - Rows: result rows
 //   - error: error if statement could not get executed
 func (statement *PreparedLoadStatement) Execute(arguments ...interface{}) (*sql.Rows, error) {
-	return statement.connection.Query(statement.command, arguments...)
+	if statement.prepared == nil {
+		prepared, err := statement.connection.Prepare(statement.command)
+		if err != nil {
+			return nil, err
+		}
+		statement.prepared = prepared
+	}
+	return statement.prepared.Query(arguments...)
 }
 
 // ExecuteTransaction executes the statement and returns the result rows
@@ -78,7 +88,7 @@ func (statement *PreparedLoadStatement) ExecuteSetTransaction(transaction *sql.T
 	if transaction != nil {
 		rows, err = transaction.Query(statement.command, arguments...)
 	} else {
-		rows, err = statement.connection.Query(statement.command, arguments...)
+		rows, err = statement.Execute(arguments...)
 	}
 
 	if err != nil {
@@ -140,7 +150,7 @@ func (statement *PreparedLoadStatement) ExecuteScalarTransaction(transaction *sq
 	if transaction != nil {
 		rows, err = transaction.Query(statement.command, arguments...)
 	} else {
-		rows, err = statement.connection.Query(statement.command, arguments...)
+		rows, err = statement.Execute(arguments...)
 	}
 
 	if err != nil {
@@ -194,7 +204,7 @@ func (statement *PreparedLoadStatement) ExecuteMappedEntityTransaction(transacti
 	if transaction != nil {
 		rows, err = transaction.Query(statement.command, arguments...)
 	} else {
-		rows, err = statement.connection.Query(statement.command, arguments...)
+		rows, err = statement.Execute(arguments...)
 	}
 
 	if err != nil {
@@ -208,17 +218,24 @@ func (statement *PreparedLoadStatement) ExecuteMappedEntityTransaction(transacti
 		return nil, err
 	}
 
+	var setters []reflect.StructField = make([]reflect.StructField, len(columns))
+	for index, column := range columns {
+		columndescription := model.Column(column)
+		field, ok := model.EntityType().FieldByName(columndescription.Field())
+		if !ok {
+			continue
+		}
+
+		setters[index] = field
+	}
+
 	var values []interface{} = make([]interface{}, len(columns))
 	var entities []interface{}
 	for rows.Next() {
 		entity := reflect.New(model.EntityType())
 
-		for index, column := range columns {
-			columndescription := model.Column(column)
-			entityfield := entity.Elem().FieldByName(columndescription.Field())
-			if entityfield.IsValid() && entityfield.CanSet() {
-				values[index] = entityfield.Addr().Interface()
-			}
+		for index, ptr := range setters {
+			values[index] = reflect.NewAt(ptr.Type, unsafe.Pointer(entity.Pointer()+ptr.Offset)).Interface()
 		}
 
 		err := rows.Scan(values...)

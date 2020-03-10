@@ -11,6 +11,8 @@ type PreparedStatement struct {
 	command    string
 	connection *sql.DB
 	loadresult bool
+
+	prepared *sql.Stmt
 }
 
 // Command sql command string send to database
@@ -30,6 +32,13 @@ func (statement *PreparedStatement) Command() string {
 //   - int64: number of affected rows
 //   - error: error if any occured
 func (statement *PreparedStatement) Execute(arguments ...interface{}) (int64, error) {
+	if statement.prepared == nil {
+		prepared, err := statement.connection.Prepare(statement.command)
+		if err != nil {
+			return 0, err
+		}
+		statement.prepared = prepared
+	}
 	return statement.ExecuteTransaction(nil, arguments...)
 }
 
@@ -49,7 +58,7 @@ func (statement *PreparedStatement) ExecuteTransaction(transaction *sql.Tx, argu
 	if transaction != nil {
 		result, err = transaction.Exec(statement.command, arguments...)
 	} else {
-		result, err = statement.connection.Exec(statement.command, arguments...)
+		result, err = statement.prepared.Exec(arguments...)
 	}
 
 	if err != nil {
