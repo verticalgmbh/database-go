@@ -2,6 +2,7 @@ package statements
 
 import (
 	"database/sql"
+	"log"
 	"strings"
 
 	"github.com/verticalgmbh/database-go/xpr"
@@ -16,11 +17,14 @@ type LoadStatement struct {
 	connection     *sql.DB
 	connectioninfo connection.IConnectionInfo
 	from           interface{}
+	alias          string // alias to use for selection source
 
+	model   *models.EntityModel // model to base select on
 	fields  []interface{}
 	groupby []interface{}
 	where   interface{}
 
+	joins []*join
 	union *union
 }
 
@@ -47,8 +51,18 @@ func NewLoadStatement(connection *sql.DB, connectioninfo connection.IConnectionI
 // **Returns**
 //   - LoadStatement: this statement for fluent behavior
 func (statement *LoadStatement) Table(table string) *LoadStatement {
-	statement.from = xpr.Table(table)
-	return statement
+	return statement.From(xpr.Table(table))
+}
+
+// Model - specifies a model to base SELECT on
+//
+// **Parameters**
+//   - model: model for which to load data
+//
+// **Returns**
+//   - LoadStatement: this statement for fluent behavior
+func (statement *LoadStatement) Model(model *models.EntityModel) *LoadStatement {
+	return statement.From(model)
 }
 
 // From - specifies a data set to load results from
@@ -59,7 +73,26 @@ func (statement *LoadStatement) Table(table string) *LoadStatement {
 // **Returns**
 //   - *LoadStatement: this statement for fluent behavior
 func (statement *LoadStatement) From(from interface{}) *LoadStatement {
-	statement.from = from
+	if model, ok := from.(*models.EntityModel); ok {
+		if statement.from != nil {
+			log.Panicf("You can't specify a model source when a FROM source is already set")
+		}
+		statement.model = model
+		statement.from = xpr.Table(model.Table)
+	} else {
+		if statement.model != nil {
+			log.Panicf("You can't specify a FROM source when a model is already set")
+		}
+
+		statement.from = from
+	}
+	return statement
+}
+
+// Alias set an alias to use when loading from the table
+//       mainly used to prevent conflicts with joined tables
+func (statement *LoadStatement) Alias(alias string) *LoadStatement {
+	statement.alias = alias
 	return statement
 }
 
@@ -97,6 +130,10 @@ func (statement *LoadStatement) Columns(columns []*models.ColumnDescriptor) *Loa
 // **Returns**
 //   - LoadStatement: this statement for fluent behavior
 func (statement *LoadStatement) Fields(fields ...interface{}) *LoadStatement {
+	if statement.model != nil {
+		log.Panicf("You can't specify fields to load if model source is set.")
+	}
+
 	statement.fields = fields
 	return statement
 }
@@ -113,22 +150,77 @@ func (statement *LoadStatement) GroupBy(fields ...interface{}) *LoadStatement {
 	return statement
 }
 
+// Join adds a join operation to apply to the load statement
+func (statement *LoadStatement) Join(jointype JoinType, table string, predicate interface{}, alias string) *LoadStatement {
+	statement.joins = append(statement.joins, &join{
+		jointype:  jointype,
+		table:     table,
+		predicate: predicate,
+		alias:     alias})
+	return statement
+}
+
+// Union - concatenates another result set to a result
+func (statement *LoadStatement) Union(load *PreparedLoadStatement, all bool) *LoadStatement {
+	statement.union = &union{
+		statement: load,
+		all:       all}
+	return statement
+}
+
 func (statement *LoadStatement) buildCommand() string {
 	var command strings.Builder
 	sqlwalker := walkers.NewSqlWalker(statement.connectioninfo, &command)
 
 	command.WriteString("SELECT ")
-	for index, field := range statement.fields {
-		if index > 0 {
-			command.WriteRune(',')
-		}
+	if statement.model != nil {
+		for index, column := range statement.model.Columns() {
+			if index > 0 {
+				command.WriteRune(',')
+			}
 
-		sqlwalker.Visit(field)
+			command.WriteString(statement.connectioninfo.MaskColumn(column.Name()))
+		}
+	} else {
+		for index, field := range statement.fields {
+			if index > 0 {
+				command.WriteRune(',')
+			}
+
+			sqlwalker.Visit(field)
+		}
 	}
 
 	if statement.from != nil {
 		command.WriteString(" FROM ")
 		sqlwalker.Visit(statement.from)
+	}
+
+	if len(statement.alias) > 0 {
+		command.WriteString(" AS ")
+		command.WriteString(statement.alias)
+	}
+
+	if len(statement.joins) > 0 {
+		for _, joinoperation := range statement.joins {
+			switch joinoperation.jointype {
+			case JoinTypeInner:
+				command.WriteString(" INNER JOIN ")
+			default:
+				log.Panicf("Invalid join type %v", joinoperation.jointype)
+			}
+
+			command.WriteString(joinoperation.table)
+			if len(joinoperation.alias) > 0 {
+				command.WriteString(" AS ")
+				command.WriteString(joinoperation.alias)
+			}
+
+			if joinoperation.predicate != nil {
+				command.WriteString(" ON ")
+				sqlwalker.Visit(joinoperation.predicate)
+			}
+		}
 	}
 
 	if statement.where != nil {
@@ -167,5 +259,6 @@ func (statement *LoadStatement) Prepare() *PreparedLoadStatement {
 	return &PreparedLoadStatement{
 		command:        statement.buildCommand(),
 		connection:     statement.connection,
-		connectioninfo: statement.connectioninfo}
+		connectioninfo: statement.connectioninfo,
+		model:          statement.model}
 }

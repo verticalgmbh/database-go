@@ -35,9 +35,10 @@ func TestPlainInsert(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), count)
 
-	loadstatement := NewLoadEntityStatement(model, database, &connection.SqliteInfo{})
+	loadstatement := NewLoadStatement(database, &connection.SqliteInfo{})
+	loadstatement.Model(model)
 	loadoperation := loadstatement.Prepare()
-	result, err := loadoperation.Execute()
+	result, err := loadoperation.ExecuteEntity()
 
 	require.NoError(t, err)
 	require.Equal(t, 1, len(result))
@@ -77,9 +78,10 @@ func TestSubstatementInValuesInsert(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), count)
 
-	loadstatement := NewLoadEntityStatement(model, database, &connection.SqliteInfo{})
+	loadstatement := NewLoadStatement(database, &connection.SqliteInfo{})
+	loadstatement.Model(model)
 	loadoperation := loadstatement.Prepare()
-	result, err := loadoperation.Execute()
+	result, err := loadoperation.ExecuteEntity()
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(result))
@@ -116,9 +118,10 @@ func TestSubstatementInsert(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), count)
 
-	loadstatement := NewLoadEntityStatement(model, database, &connection.SqliteInfo{})
+	loadstatement := NewLoadStatement(database, &connection.SqliteInfo{})
+	loadstatement.Model(model)
 	loadoperation := loadstatement.Prepare()
-	result, err := loadoperation.Execute()
+	result, err := loadoperation.ExecuteEntity()
 
 	require.NoError(t, err)
 	require.Equal(t, 2, len(result))

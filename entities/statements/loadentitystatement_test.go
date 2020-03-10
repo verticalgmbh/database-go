@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/verticalgmbh/database-go/connection"
 	"github.com/verticalgmbh/database-go/entities/models"
 	"github.com/verticalgmbh/database-go/xpr"
@@ -31,40 +31,42 @@ func TestWhere(t *testing.T) {
 
 	model := models.CreateModel(reflect.TypeOf(ExampleModel{}))
 
-	statement := NewLoadEntityStatement(model, database, &connection.SqliteInfo{})
+	statement := NewLoadStatement(database, &connection.SqliteInfo{})
+	statement.From(model)
 	statement.Where(xpr.Les(xpr.Field(model, "SomeInt"), xpr.Parameter()))
 
 	operation := statement.Prepare()
 
-	result, err := operation.Execute(4)
+	result, err := operation.ExecuteEntity(4)
 
-	assert.NoError(t, err)
-	assert.Equal(t, 3, len(result))
+	require.NoError(t, err)
+	require.Equal(t, 3, len(result))
 
 	result1 := result[0].(*ExampleModel)
 	result2 := result[1].(*ExampleModel)
 	result3 := result[2].(*ExampleModel)
 
-	assert.Equal(t, "hallo", result1.Something)
-	assert.Equal(t, 0, result1.SomeInt)
-	assert.Equal(t, float32(0.5), result1.SomeFloat)
+	require.Equal(t, "hallo", result1.Something)
+	require.Equal(t, 0, result1.SomeInt)
+	require.Equal(t, float32(0.5), result1.SomeFloat)
 
-	assert.Equal(t, "hello", result2.Something)
-	assert.Equal(t, 2, result2.SomeInt)
-	assert.Equal(t, float32(0.2), result2.SomeFloat)
+	require.Equal(t, "hello", result2.Something)
+	require.Equal(t, 2, result2.SomeInt)
+	require.Equal(t, float32(0.2), result2.SomeFloat)
 
-	assert.Equal(t, "hillo", result3.Something)
-	assert.Equal(t, 1, result3.SomeInt)
-	assert.Equal(t, float32(0.8), result3.SomeFloat)
+	require.Equal(t, "hillo", result3.Something)
+	require.Equal(t, 1, result3.SomeInt)
+	require.Equal(t, float32(0.8), result3.SomeFloat)
 }
 
 func TestJoin(t *testing.T) {
 	model := models.CreateModel(reflect.TypeOf(ExampleModel{}))
-	statement := NewLoadEntityStatement(model, nil, &connection.SqliteInfo{})
+	statement := NewLoadStatement(nil, &connection.SqliteInfo{})
+	statement.From(model)
 	statement.Alias("t")
 	statement.Where(xpr.Equals(xpr.AliasColumn("t", "test"), 10))
 	statement.Join(JoinTypeInner, "differenttable", xpr.Equals(xpr.AliasColumn("dt", "key"), 8), "dt")
 
 	prepared := statement.Prepare()
-	assert.Equal(t, "SELECT [something],[someint],[somefloat] FROM examplemodel AS t INNER JOIN differenttable AS dt ON dt.[key] = 8 WHERE t.[test] = 10", prepared.Command())
+	require.Equal(t, "SELECT [something],[someint],[somefloat] FROM examplemodel AS t INNER JOIN differenttable AS dt ON dt.[key] = 8 WHERE t.[test] = 10", prepared.Command())
 }

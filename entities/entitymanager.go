@@ -18,7 +18,7 @@ type IEntityManager interface {
 	Transaction() (*sql.Tx, error)
 
 	// loads entities from the database
-	LoadEntities(model *models.EntityModel) statements.ILoadEntityStatement
+	LoadEntities(model *models.EntityModel) *statements.LoadStatement
 
 	// loads data from a table
 	Load(model *models.EntityModel, fields ...interface{}) *statements.LoadStatement
@@ -63,8 +63,8 @@ func (manager *EntityManager) Transaction() (*sql.Tx, error) {
 //
 // **Returns**
 //   - LoadEntityStatement: statement to use to prepare load entity operation
-func (manager *EntityManager) LoadEntities(model *models.EntityModel) statements.ILoadEntityStatement {
-	return statements.NewLoadEntityStatement(model, manager.connection, manager.connectioninfo)
+func (manager *EntityManager) LoadEntities(model *models.EntityModel) *statements.LoadStatement {
+	return statements.NewLoadStatement(manager.connection, manager.connectioninfo).Model(model)
 }
 
 // Load creates a statement used to load data from the database

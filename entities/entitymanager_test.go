@@ -89,7 +89,7 @@ func TestUpdateEntityWithoutFilter(t *testing.T) {
 
 	assert.Equal(t, int64(3), affected)
 
-	result, err := entitymanager.LoadEntities(model).Prepare().Execute()
+	result, err := entitymanager.LoadEntities(model).Prepare().ExecuteEntity()
 	assert.NoError(t, err)
 
 	assert.Equal(t, 3, len(result))

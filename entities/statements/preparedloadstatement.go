@@ -16,6 +16,7 @@ type PreparedLoadStatement struct {
 	command        string
 	connection     *sql.DB
 	connectioninfo connection.IConnectionInfo
+	model          *models.EntityModel // model on which select was based on
 }
 
 // Command sql command string sent to database
@@ -171,12 +172,22 @@ func (statement *PreparedLoadStatement) ExecuteScalarTransaction(transaction *sq
 }
 
 // ExecuteEntity - loads matching entity data from database
-func (statement *PreparedLoadEntityStatement) ExecuteEntity(model *models.EntityModel, arguments ...interface{}) ([]interface{}, error) {
-	return statement.ExecuteEntityTransaction(nil, model, arguments...)
+func (statement *PreparedLoadStatement) ExecuteEntity(arguments ...interface{}) ([]interface{}, error) {
+	return statement.ExecuteEntityTransaction(nil, arguments...)
 }
 
 // ExecuteEntityTransaction - loads matching entity data from database
-func (statement *PreparedLoadEntityStatement) ExecuteEntityTransaction(transaction *sql.Tx, model *models.EntityModel, arguments ...interface{}) ([]interface{}, error) {
+func (statement *PreparedLoadStatement) ExecuteEntityTransaction(transaction *sql.Tx, arguments ...interface{}) ([]interface{}, error) {
+	return statement.ExecuteMappedEntityTransaction(transaction, statement.model, arguments...)
+}
+
+// ExecuteMappedEntity - loads matching entity data from database
+func (statement *PreparedLoadStatement) ExecuteMappedEntity(model *models.EntityModel, arguments ...interface{}) ([]interface{}, error) {
+	return statement.ExecuteMappedEntityTransaction(nil, model, arguments...)
+}
+
+// ExecuteMappedEntityTransaction - loads matching entity data from database
+func (statement *PreparedLoadStatement) ExecuteMappedEntityTransaction(transaction *sql.Tx, model *models.EntityModel, arguments ...interface{}) ([]interface{}, error) {
 	var rows *sql.Rows
 	var err error
 

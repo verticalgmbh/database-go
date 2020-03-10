@@ -40,7 +40,7 @@ func Test_DeleteSpecificEntity(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), affected)
 
-	entities, err := NewLoadEntityStatement(model, database, &connection.SqliteInfo{}).Prepare().Execute()
+	entities, err := NewLoadStatement(database, &connection.SqliteInfo{}).Model(model).Prepare().ExecuteEntity()
 
 	require.NoError(t, err)
 	require.Equal(t, 3, len(entities))
