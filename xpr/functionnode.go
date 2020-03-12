@@ -21,6 +21,9 @@ const (
 
 	// FunctionMin minimum of a set of values
 	FunctionMin
+
+	// FunctionCoalesce returns first value from list which is not null, null if all values are null
+	FunctionCoalesce
 )
 
 // FunctionNode node in an expression tree representing a database function

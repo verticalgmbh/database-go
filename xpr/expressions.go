@@ -267,3 +267,11 @@ func Statement(statement interfaces.IPreparedOperation) *StatementNode {
 func Table(name string) *TableNode {
 	return &TableNode{Name: name}
 }
+
+// Coalesce - returns first value from collection which is not null or null
+//            if all values are null
+func Coalesce(collection ...interface{}) *FunctionNode {
+	return &FunctionNode{
+		function:   FunctionCoalesce,
+		parameters: collection}
+}

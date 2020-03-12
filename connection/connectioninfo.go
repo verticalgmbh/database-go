@@ -126,6 +126,22 @@ func EvaluateFunction(function *xpr.FunctionNode, command *strings.Builder, eval
 			return false, err
 		}
 		command.WriteRune(')')
+	case xpr.FunctionCoalesce:
+		if len(function.Parameters()) < 1 {
+			return false, errors.Errorf("Function Coalesce expects at least one parameter")
+		}
+
+		command.WriteString("COALESCE(")
+		for index, item := range function.Parameters() {
+			if index > 0 {
+				command.WriteRune(',')
+			}
+			err := eval(item)
+			if err != nil {
+				return false, err
+			}
+		}
+		command.WriteRune(')')
 	default:
 		return false, nil
 	}
