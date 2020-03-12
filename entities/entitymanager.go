@@ -34,6 +34,9 @@ type IEntityManager interface {
 
 	// deletes rows from a database
 	Delete(model *models.EntityModel) *statements.DeleteStatement
+
+	// updates schema of a table in database (or creates it)
+	UpdateSchema(model *models.EntityModel) error
 }
 
 // EntityManager manages access to database with fluent statements using a database connection
