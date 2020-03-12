@@ -31,7 +31,8 @@ func NewSqliteInfo() *SqliteInfo {
 //   - command: command to write evaluation result to
 func (info *SqliteInfo) EvaluateParameter(parameter *xpr.ParameterNode, command *strings.Builder) {
 	if len(parameter.Name()) > 0 {
-		command.WriteString("@")
+		// the currently used sqlite package only supports ':' (and not @)
+		command.WriteString(":")
 		command.WriteString(parameter.Name())
 	} else {
 		command.WriteString("?")
