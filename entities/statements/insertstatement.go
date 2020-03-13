@@ -113,12 +113,14 @@ func (statement *InsertStatement) Prepare() *PreparedStatement {
 		command.WriteRune(')')
 	}
 
+	var postquery string
 	if statement.returnid {
-		statement.connectioninfo.ReturnIdentity(&command)
+		postquery = statement.connectioninfo.ReturnIdentity(&command)
 	}
 
 	return &PreparedStatement{
 		command:    command.String(),
 		connection: statement.connection,
-		loadresult: statement.returnid}
+		loadresult: statement.returnid && len(postquery) == 0,
+		postquery:  postquery}
 }

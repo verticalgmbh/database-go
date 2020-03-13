@@ -377,6 +377,6 @@ func (info *SqliteInfo) GetSchemas(connection *sql.DB) ([]models.Schema, error) 
 //
 // **Parameters**
 //   - command: statement to modify
-func (info *SqliteInfo) ReturnIdentity(command *strings.Builder) {
-	command.WriteString(";SELECT last_insert_rowid()")
+func (info *SqliteInfo) ReturnIdentity(command *strings.Builder) string {
+	return "SELECT last_insert_rowid()"
 }

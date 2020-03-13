@@ -115,6 +115,7 @@ func (info *SQLServerInfo) GetSchemas(connection *sql.DB) ([]models.Schema, erro
 //
 // **Parameters**
 //   - command: statement to modify
-func (info *SQLServerInfo) ReturnIdentity(command *strings.Builder) {
+func (info *SQLServerInfo) ReturnIdentity(command *strings.Builder) string {
 	command.WriteString(";SELECT SCOPE_IDENTITY()")
+	return ""
 }

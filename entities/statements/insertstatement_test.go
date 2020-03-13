@@ -137,7 +137,7 @@ func TestReturnId(t *testing.T) {
 	database, _ := sql.Open("sqlite3", ":memory:")
 	defer database.Close()
 
-	_, err := database.Exec("CREATE TABLE insertmodel (something string, someint int, somefloat real)")
+	_, err := database.Exec("CREATE TABLE insertmodel (id INTEGER PRIMARY KEY AUTOINCREMENT, something string, someint int, somefloat real)")
 	require.NoError(t, err)
 	_, err = database.Exec("INSERT INTO insertmodel (something, someint, somefloat) VALUES('test', 5, 0.0)")
 	require.NoError(t, err)

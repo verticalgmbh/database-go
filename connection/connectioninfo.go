@@ -85,7 +85,7 @@ type IConnectionInfo interface {
 	GetSchemas(connection *sql.DB) ([]models.Schema, error)
 
 	// Adds statement to command which returns identity of last inserted row
-	ReturnIdentity(command *strings.Builder)
+	ReturnIdentity(command *strings.Builder) string
 }
 
 // EvaluateFunction function node evaluation which should work on all databases
