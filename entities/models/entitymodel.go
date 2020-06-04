@@ -108,6 +108,13 @@ func CreateModel(entitytype reflect.Type) *EntityModel {
 	return &model
 }
 
+// CreateModelWithTable - creates a new entity model for a type
+func CreateModelWithTable(entitytype reflect.Type, table string) *EntityModel {
+	model := CreateModel(entitytype)
+	model.Table = table
+	return model
+}
+
 // Columns - access to all columns in model
 func (model *EntityModel) Columns() []*ColumnDescriptor {
 	var columns []*ColumnDescriptor
