@@ -220,6 +220,13 @@ func AliasColumn(alias string, columnname string) *AliasNode {
 			Name: columnname}}
 }
 
+// Column - creates a new node representing a column
+func Column(name string) *ColumnNode {
+	return &ColumnNode{
+		Name: name,
+	}
+}
+
 // Field - creates a new node representing an entity field
 func Field(model *models.EntityModel, name string) *FieldNode {
 	return &FieldNode{
